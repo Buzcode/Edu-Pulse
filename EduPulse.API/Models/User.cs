@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EduPulse.API.Models
 {
@@ -31,10 +29,8 @@ namespace EduPulse.API.Models
         public int? CurrentSemester { get; set; }
 
         public int DepartmentId { get; set; }
-
-        [ForeignKey("DepartmentId")]
         public Department? Department { get; set; }
 
-        // REMOVED: Grades list (causes error because Grade.cs is not here)
+        public ICollection<Grade> Grades { get; set; } = new List<Grade>();
     }
 }
