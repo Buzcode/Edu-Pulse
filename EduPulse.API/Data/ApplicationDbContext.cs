@@ -15,7 +15,11 @@ namespace EduPulse.API.Data
         public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<CourseMaterial> CourseMaterials { get; set; }
-      
+        public DbSet<Assessment> Assessments { get; set; }
+        public DbSet<Grade> Grades { get; set; }
+        public DbSet<Attendance> Attendances { get; set; }
+        
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

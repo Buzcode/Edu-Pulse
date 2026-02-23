@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EduPulse.API.Models
@@ -15,6 +14,7 @@ namespace EduPulse.API.Models
         public string Code { get; set; } = string.Empty;
 
         // ✅ FIX: Must match User.Id (int)
+        // Nullable allows creating a Course before assigning a Teacher
         public int? TeacherId { get; set; }
 
         [ForeignKey(nameof(TeacherId))]
@@ -35,7 +35,6 @@ namespace EduPulse.API.Models
 
         // --- NAVIGATION PROPERTIES ---
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-
-        // REMOVED: Assessments list (causes error)
+        public ICollection<Assessment> Assessments { get; set; } = new List<Assessment>();
     }
 }

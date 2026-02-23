@@ -1,5 +1,5 @@
 using EduPulse.API.Data;
-// using EduPulse.API.Services; // ⚠️ Commented out because you haven't moved Services yet
+using EduPulse.API.Services; // ✅ Re-enabled: Make sure this folder exists
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,15 +10,19 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 // -------------------- DATABASE --------------------
-// This connects to the database defined in appsettings.json
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+
+    // Ignore warnings for pending model changes during development
+    options.ConfigureWarnings(w =>
+        w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)
+    );
 });
 
-// -------------------- SERVICES --------------------
-// ⚠️ REMOVED AttendanceService because it hasn't been copied yet.
-// If your Auth/Courses logic is inside Controllers, you don't need to register anything here.
+// -------------------- SERVICES (DEPENDENCY INJECTION) --------------------
+// ✅ ADDED: This fixes the "Unable to resolve service" crash
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 // -------------------- CONTROLLERS --------------------
 builder.Services.AddControllers()
@@ -32,14 +36,13 @@ builder.Services.AddControllers()
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
-        policy.WithOrigins("http://localhost:5173") // Make sure this matches your React port
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials());
 });
 
 // -------------------- AUTHENTICATION --------------------
-// This reads the JWT settings from appsettings.json
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -57,26 +60,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// -------------------- STATIC FILES (Uploads) --------------------
-// Ensures the "Uploads" folder exists for course materials
-var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");
-if (!Directory.Exists(uploadsPath))
-{
-    Directory.CreateDirectory(uploadsPath);
-}
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(uploadsPath),
-    RequestPath = "/Uploads"
-});
-
-// -------------------- AUTO-MIGRATION --------------------
+// -------------------- DATABASE AUTO-MIGRATION & SEEDING --------------------
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -85,20 +75,19 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         var configuration = services.GetRequiredService<IConfiguration>();
 
-        // This applies the migration to create the DB automatically
+        // Applies migrations automatically
         context.Database.Migrate();
 
-        // ⚠️ Commented out DbSeeder. 
-        // Only uncomment this if you have copied "DbSeeder.cs" to your Data folder.
-        // DbSeeder.Seed(context, configuration); 
+        // ✅ RE-ENABLED: This seeds the database with initial data
+        DbSeeder.Seed(context, configuration);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"DB Error: {ex.Message}");
+        Console.WriteLine($"DB Error during Migration/Seed: {ex.Message}");
     }
 }
 
-// -------------------- MIDDLEWARE --------------------
+// -------------------- MIDDLEWARE PIPELINE --------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -112,5 +101,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// -------------------- STATIC FILES (Uploads) --------------------
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/Uploads"
+});
 
 app.Run();
