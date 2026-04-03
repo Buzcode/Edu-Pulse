@@ -14,13 +14,108 @@ body {
     min-height: 100vh;
     background-color: #f8fcf8;
 }
+/* ================= INSTITUTIONAL SPLIT LOGIN ================= */
 
-/* ================= AUTH (LOGIN & REGISTER) ================= */
-.auth-wrapper {
+.split-login-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+/* Left side - The Building Image */
+.login-image-side {
+    flex: 1.6;
+    background-image: url('./assets/aust1.jpg'); /* Ensure path is correct */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    height: 100vh;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Subtle dark gradient to make the image look professional */
+    background: linear-gradient(to right, rgba(0,0,0,0.2), transparent);
+}
+
+/* Right side - The White Form Area */
+.login-form-side {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80vh;
+    padding: 40px;
+    background: white;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.login-content-wrapper {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Align text to the left as requested */
+.sign-in-heading {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.heading-underline {
+    width: 100%;
+    height: 3px;
+    background-color: #1b4332; /* Deep Green */
+    margin-bottom: 25px;
+}
+
+.iums-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    display: block;
+    text-align: left;
+}
+
+.iums-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d1d1;
+    background-color: #f8fafc;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+/* ================= AUTH (LOGIN & REGISTER) ================= */
+.auth-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Made the white overlay thinner (0.2) so green balls are sharp */
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), url('./assets/aust1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
 }
 
 .auth-card {
@@ -209,68 +304,111 @@ body {
         background-color: #40916c;
     }
 
-/* ================= COURSES SECTION ================= */
-.courses-section {
-    margin-top: 40px;
+/* ================= PROFESSIONAL COURSE CARDS ================= */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
 }
 
-.courses-header {
+.course-card-pro {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+    .course-card-pro:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(45, 106, 79, 0.15);
+        border-color: #40916c;
+    }
+
+.course-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
-    .courses-header h2 {
-        color: #2d6a4f;
-        margin: 0;
-    }
-
-.courses-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
-    margin-top: 10px;
-}
-
-.course-card {
-    cursor: pointer;
-    border: 1px solid #d8f3dc;
-    color: #2d3b2d;
-    transition: all 0.2s ease;
-    padding: 20px;
-    border-radius: 12px;
-    background-color: #f0f9f4; /* subtle greenish card */
-    box-shadow: 0 2px 8px rgba(45, 106, 79, 0.06);
-}
-
-    .course-card:hover {
-        border-color: #40916c;
-        box-shadow: 0 4px 16px rgba(45, 106, 79, 0.12);
-        transform: translateY(-2px);
-    }
-
-.course-code {
+.pro-code {
+    font-weight: 800;
     color: #2d6a4f;
-    margin: 0 0 10px 0;
-    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
 }
 
-.course-subtext {
-    font-size: 0.85em;
-    color: #52796f;
-    line-height: 1.5;
-}
-
-.course-year-sem {
-    display: inline-block;
-    font-size: 0.75em;
+.pro-tag {
+    background: #e8f5e9;
+    color: #2d6a4f;
+    font-size: 0.75rem;
     padding: 4px 10px;
     border-radius: 20px;
-    background-color: #d8f3dc;
-    color: #2d6a4f;
-    font-weight: 500;
-    margin-top: 12px;
+    font-weight: 700;
+}
+
+.pro-title {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 20px;
+    height: 3em; /* Ensures alignment */
+    overflow: hidden;
+}
+
+.pro-actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+    .action-group label {
+        width: 100%;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: #999;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+.btn-pro-outline {
+    flex: 1;
+    background: white;
+    border: 1px solid #40916c;
+    color: #40916c;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .btn-pro-outline:hover {
+        background: #f0fdf4;
+    }
+
+.btn-pro-solid {
+    flex: 1;
+    background: #40916c;
+    border: none;
+    color: white;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /* ================= TEACHER COURSES PAGE ================= */
@@ -614,131 +752,653 @@ body {
     }
 }
 
-/* --- Gradebook Specific Styles --- */
-
-.gradebook-table-container {
-    overflow-x: auto;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-top: 15px;
+/* Sidebar Layout & Transitions */
+.app-sidebar {
+    width: 260px; /* Default width */
+    background-color: #1b4332;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth sliding */
+    overflow: hidden;
+    white-space: nowrap;
 }
 
-/* Make table headers look more professional */
-.admin-table th {
-    background-color: #f8fafc;
-    color: #475569;
-    font-weight: 600;
-    padding: 14px;
-    border-bottom: 2px solid #e2e8f0;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.025em;
+/* Collapsed Width */
+.sidebar-collapsed .app-sidebar {
+    width: 70px;
 }
 
-.admin-table td {
-    padding: 12px;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
+/* Header Adjustments */
+/* Update these specific parts in your index.css */
+
+.sidebar-header {
+    padding: 20px 10px; /* Reduced side padding */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 80px;
+    transition: all 0.3s;
 }
 
-/* Small inputs for marks entry */
-.mark-input {
-    width: 65px;
-    padding: 6px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
+/* When collapsed, stack the logo and button or center them */
+.sidebar-collapsed .sidebar-header {
+    flex-direction: column; /* Stack them vertically */
+    gap: 10px;
+    padding: 15px 5px;
+    justify-content: center;
 }
 
-    .mark-input:focus {
-        border-color: #6366f1;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-    }
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-/* Delete button styling */
-.btn-delete-col {
+/* Ensure the toggle button is always visible and clickable */
+.sidebar-toggle-btn {
+    background: #40916c; /* Give it a background color so it's easier to see */
     border: none;
-    background: #fee2e2;
-    color: #ef4444;
+    color: white;
     cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 4px;
-    margin-left: 8px;
-    font-size: 12px;
-    transition: background 0.2s;
+    font-size: 1.1rem;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: transform 0.2s;
 }
 
-    .btn-delete-col:hover {
-        background: #fecaca;
+    .sidebar-toggle-btn:hover {
+        background: #52b788;
+        transform: scale(1.1);
     }
 
-/* Modal Improvements */
-/* This makes the background dark and fixes it to the whole screen */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+/* Ensure the icons in the menu are centered when collapsed */
+.sidebar-collapsed .nav-item,
+.sidebar-collapsed .nav-item-disabled {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.sidebar-collapsed .nav-icon {
+    margin: 0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-toggle-btn {
+    background: transparent;
+    border: none;
+    color: #95d5b2;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+    .sidebar-toggle-btn:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
+/* Nav Item Tweaks */
+.nav-item, .nav-item-disabled {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 20px;
+}
+
+.nav-icon {
+    font-size: 1.2rem;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Hide labels when collapsed */
+.sidebar-collapsed .nav-text,
+.sidebar-collapsed .nav-label,
+.sidebar-collapsed .brand-name {
+    display: none;
+}
+
+/* Footer Adjustments */
+.btn-logout-sidebar {
+    transition: all 0.2s;
+}
+
+.sidebar-collapsed .btn-logout-sidebar {
+    margin: 10px;
+    width: 50px;
+    height: 50px;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* This ensures it stays on top of everything else */
-    backdrop-filter: blur(3px); /* Optional: adds a nice blur to the background */
+    font-size: 1.2rem;
 }
 
-/* Ensure the modal content itself looks like a card */
-.modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-out; /* Optional: smooth entry */
-}
+/* Responsive fix: On mobile, you might want to hide it completely, but for now, this flexible desktop view works best */
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.modal-header {
-    margin-bottom: 1.5rem;
-    text-align: center;
-}
-
-.modal-form-group {
-    margin-bottom: 1.25rem;
-}
-
-.modal-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 0.5rem;
-}
-
-.modal-footer {
+/* Layout Structure */
+.layout-wrapper {
     display: flex;
-    gap: 12px;
-    margin-top: 1.5rem;
+    height: 100vh;
+    overflow: hidden;
 }
 
-    .modal-footer button {
-        flex: 1;
-        padding: 10px;
+/* Sidebar Styles */
+.app-sidebar {
+    width: 260px;
+    background-color: #1b4332; /* Deep Green */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar-header {
+    padding: 30px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.logo-circle {
+    width: 40px;
+    height: 40px;
+    background: #52b788;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.brand-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.sidebar-menu {
+    flex-grow: 1;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #95d5b2;
+    margin: 20px 0 10px 10px;
+    font-weight: 600;
+}
+
+.nav-item {
+    padding: 12px 15px;
+    color: #d8f3dc;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: 0.2s;
+    font-size: 0.95rem;
+}
+
+    .nav-item:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
     }
+
+    .nav-item.active {
+        background: #40916c;
+        color: white;
+        font-weight: 600;
+    }
+
+.nav-item-disabled {
+    padding: 12px 15px;
+    color: #52796f;
+    cursor: not-allowed;
+    font-size: 0.95rem;
+}
+
+/* ================= MAIN CONTENT AREA (UPDATED FOR 3D BACKGROUND) ================= */
+/* FORCE TRANSPARENCY SO PARTICLES SHOW */
+html, body, #root {
+    background-color: transparent !important;
+}
+
+.layout-wrapper {
+    background-color: transparent !important;
+}
+
+.main-viewport {
+    flex-grow: 1;
+    /* Use 0.2 opacity (80% transparent) */
+    background-color: rgba(240, 244, 241, 0.2) !important;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Update your cards to be "Glass" so balls are blurry behind them */
+.user-info-card, .course-card-pro, .teacher-course-form, .admin-section {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.top-nav {
+    height: 65px;
+    /* Glass effect for top bar */
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    border-bottom: 1px solid rgba(216, 243, 220, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.portal-tag {
+    background: #e8f5e9;
+    color: #2d6a4f;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border: 1px solid #c7e9cc;
+}
+
+.top-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar-small {
+    width: 35px;
+    height: 35px;
+    background: #40916c;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(64, 145, 108, 0.3);
+}
+
+.content-area {
+    padding: 30px;
+    flex-grow: 1;
+    /* Ensure content stays above the background but below modals */
+    position: relative;
+    z-index: 1;
+}
+
+/* IMPORTANT: Update cards so they also have a 'Glass' feel */
+.user-info-card, .course-card-pro, .admin-section {
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.app-footer {
+    padding: 15px 30px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    /* Glass Effect for footer */
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(238, 238, 238, 0.5);
+}
+
+.btn-logout-sidebar {
+    margin: 20px;
+    padding: 10px;
+    background: #e76f51;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    width: calc(100% - 40px);
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+    .btn-logout-sidebar:hover {
+        background: #d64933;
+        transform: translateY(-2px);
+    }
+
+/* --- IUMS EXACT HOME PAGE STYLING (GREEN THEME) --- */
+
+.iums-home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 50px;
+    min-height: 80vh;
+}
+
+.iums-home-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 650px;
+    padding: 40px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+    margin-bottom: 20px;
+}
+
+.iums-avatar-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 35px;
+}
+
+/* Updated from blue to EduPulse Green */
+.iums-green-circle {
+    width: 130px;
+    height: 130px;
+    background-color: #40916c; /* Your theme green */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid #fff;
+    box-shadow: 0 0 0 2px #40916c; /* Green outer ring */
+}
+
+.avatar-icon-svg {
+    font-size: 70px;
+    color: white;
+}
+
+.iums-display-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .iums-display-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+        .iums-display-table td.iums-label {
+            font-weight: 700;
+            width: 35%;
+            color: #444;
+        }
+
+        .iums-display-table td.iums-value {
+            width: 65%;
+            color: #555;
+        }
+
+.iums-success-text {
+    color: #27ae60 !important; /* Success Green */
+    font-weight: 700;
+}
+
+.iums-card-footer {
+    width: 100%;
+    max-width: 1200px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #888;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+/* Container for buttons in a table cell */
+.actions-cell {
+    display: flex;
+    flex-wrap: wrap; /* Allows buttons to drop to next line if screen is small */
+    gap: 8px; /* Spacing between buttons */
+    justify-content: flex-start;
+    padding: 10px 0;
+}
+
+    /* Specific styling for table buttons to prevent them from being 100% width */
+    .actions-cell button {
+        width: auto !important; /* Force buttons to only be as wide as their text */
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        white-space: nowrap; /* Prevents text inside button from wrapping */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+/* Optional: Make the Course Content button stand out since it's the main action */
+.btn-content {
+    background-color: #2d6a4f;
+    color: white;
+}
+
+.btn-sheet {
+    background-color: #17a2b8;
+    color: white;
+}
+
+/* ================= SPLIT LOGIN PAGE STYLES ================= */
+
+/* ================= MAIN CONTENT AREA (REVERTED TO SOLID) ================= */
+.main-viewport {
+    flex-grow: 1;
+    background-color: #f0f4f1; /* Solid light gray-green */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.top-nav {
+    height: 65px;
+    background: white; /* Solid white */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    border-bottom: 1px solid #d8f3dc;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* Reset cards to solid white (Removing blur/transparency) */
+.user-info-card, .course-card-pro, .admin-section, .teacher-course-form {
+    background-color: #ffffff !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d8f3dc !important;
+    box-shadow: 0 2px 8px rgba(45, 106, 79, 0.06) !important;
+}
+
+.app-footer {
+    padding: 15px 30px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #888;
+    background: white;
+    border-top: 1px solid #eee;
+}
+/* 3. Right side - Form Area */
+.login-form-side {
+    flex: 1; /* Takes up about 38% */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    background: white;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.login-content-wrapper {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 4. Branding Section (The logo and university name) */
+.iums-header-branding {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    margin-bottom: 40px;
+}
+
+.iums-logo-box {
+    width: 60px;
+    height: 60px;
+    background: #1b4332; /* Deep Green */
+    color: white;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.iums-main-title {
+    font-size: 1rem;
+    color: #2d6a4f;
+    margin: 0;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.iums-sub-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.iums-acronym {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #333;
+    line-height: 1;
+}
+
+.iums-for {
+    font-style: italic;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.iums-uni-name {
+    font-size: 0.75rem;
+    color: #777;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* 5. Sign-in Header with Green Underline */
+.sign-in-section {
+    margin-top: 10px;
+}
+
+.sign-in-heading {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.heading-underline {
+    width: 100%;
+    height: 3px;
+    background-color: #2d6a4f;
+    margin-bottom: 25px;
+}
+
+/* 6. Form Styling */
+.iums-login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.iums-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.iums-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d1d1;
+    background-color: #f1f6ff; /* The light blue tint from the screenshot */
+    border-radius: 2px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.iums-btn-sign-in {
+    background-color: #008000; /* Institutional Green */
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.forgot-pass-link {
+    color: #3498db;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.signup-notice {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.signup-link {
+    color: #52b788;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.login-page-footer {
+    margin-top: 50px;
+    font-size: 0.7rem;
+    color: #aaa;
+}
