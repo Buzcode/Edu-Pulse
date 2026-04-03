@@ -54,24 +54,50 @@ const Register = () => {
     return (
         <div className="auth-wrapper">
             <div className="auth-card auth-card-register">
-                <form onSubmit={handleSubmit}>
+                {/* Added autoComplete="off" to form */}
+                <form onSubmit={handleSubmit} autoComplete="off">
                     <h2>EduPulse Sign Up</h2>
 
                     {error && <div className="error-msg">{error}</div>}
 
                     <div className="form-group">
                         <label>Full Name</label>
-                        <input className="form-input" onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                        <input
+                            className="form-input"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            required
+                        />
                     </div>
 
                     <div className="form-group">
                         <label>Email</label>
-                        <input type="email" className="form-input" onChange={e => setFormData({ ...formData, email: e.target.value })} required />
+                        <input
+                            type="email"
+                            className="form-input"
+                            value={formData.email}
+                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                            required
+                            /* SECURITY FIX */
+                            autoComplete="new-email"
+                            readOnly={true}
+                            onFocus={(e) => e.target.removeAttribute('readonly')}
+                        />
                     </div>
 
                     <div className="form-group">
                         <label>Password</label>
-                        <input type="password" className="form-input" onChange={e => setFormData({ ...formData, password: e.target.value })} required />
+                        <input
+                            type="password"
+                            className="form-input"
+                            value={formData.password}
+                            onChange={e => setFormData({ ...formData, password: e.target.value })}
+                            required
+                            /* SECURITY FIX */
+                            autoComplete="new-password"
+                            readOnly={true}
+                            onFocus={(e) => e.target.removeAttribute('readonly')}
+                        />
                     </div>
 
                     <div className="form-group">
@@ -84,7 +110,7 @@ const Register = () => {
 
                     <div className="form-group">
                         <label>Department</label>
-                        <select className="form-input" onChange={e => setFormData({ ...formData, departmentId: e.target.value })} required>
+                        <select className="form-input" value={formData.departmentId} onChange={e => setFormData({ ...formData, departmentId: e.target.value })} required>
                             <option value="">Select Department</option>
                             {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                         </select>
@@ -94,11 +120,11 @@ const Register = () => {
                         <div className="student-fields">
                             <div className="form-group">
                                 <label>Year</label>
-                                <input type="number" className="form-input" min="1" max="4" onChange={e => setFormData({ ...formData, year: e.target.value })} required />
+                                <input type="number" value={formData.year} className="form-input" min="1" max="4" onChange={e => setFormData({ ...formData, year: e.target.value })} required />
                             </div>
                             <div className="form-group">
                                 <label>Semester</label>
-                                <input type="number" className="form-input" min="1" max="2" onChange={e => setFormData({ ...formData, semester: e.target.value })} required />
+                                <input type="number" value={formData.semester} className="form-input" min="1" max="2" onChange={e => setFormData({ ...formData, semester: e.target.value })} required />
                             </div>
                         </div>
                     )}
@@ -106,7 +132,18 @@ const Register = () => {
                     {formData.role === 'Teacher' && (
                         <div className="form-group">
                             <label>Secret Key</label>
-                            <input type="password" placeholder="Departmental Key" className="form-input" onChange={e => setFormData({ ...formData, verificationKey: e.target.value })} required />
+                            <input
+                                type="password"
+                                placeholder="Departmental Key"
+                                className="form-input"
+                                value={formData.verificationKey}
+                                onChange={e => setFormData({ ...formData, verificationKey: e.target.value })}
+                                required
+                                /* Prevent key auto-fill as well */
+                                autoComplete="new-password"
+                                readOnly={true}
+                                onFocus={(e) => e.target.removeAttribute('readonly')}
+                            />
                         </div>
                     )}
 

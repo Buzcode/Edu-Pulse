@@ -23,29 +23,16 @@ namespace EduPulse.API.Services
         // ============================
         public async Task MarkAttendanceAsync(MarkAttendanceRequest request)
         {
-            // 1. Pre-fetch enrollments for this course
-            var courseEnrollments = await _context.Enrollments
-                .Where(e => e.CourseId == request.CourseId)
-                .ToListAsync();
-
-            /* --- SOFTSKILL PART REMOVED TEMPORARILY ---
-            var existingSoftSkills = await _context.SoftSkills
-                .Include(s => s.Enrollment)
-                .Where(s => s.Enrollment != null && s.Enrollment.CourseId == request.CourseId && s.Date.Date == request.Date.Date)
-                .ToListAsync();
-            */
-
             foreach (var item in request.Students)
             {
-                // --- Part A: Handle Attendance Record ---
-                var existingAttendance = await _context.Attendances.FirstOrDefaultAsync(a =>
+                var existing = await _context.Attendances.FirstOrDefaultAsync(a =>
                     a.CourseId == request.CourseId &&
                     a.StudentId == item.StudentId &&
                     a.Date.Date == request.Date.Date);
 
-                if (existingAttendance != null)
+                if (existing != null)
                 {
-                    existingAttendance.IsPresent = item.IsPresent;
+                    existing.IsPresent = item.IsPresent;
                 }
                 else
                 {
@@ -57,31 +44,6 @@ namespace EduPulse.API.Services
                         IsPresent = item.IsPresent
                     });
                 }
-
-                // --- Part B: The "Daily Pulse" Sync Logic (SOFTSKILL) ---
-                /* --- COMMENTED OUT FOR TEAMMATE ---
-                if (item.IsPresent)
-                {
-                    var enrollment = courseEnrollments.FirstOrDefault(e => e.StudentId == item.StudentId);
-                    if (enrollment != null)
-                    {
-                        bool skillAlreadyExists = existingSoftSkills.Any(s => s.EnrollmentId == enrollment.Id);
-                        if (!skillAlreadyExists)
-                        {
-                            var newSoftSkill = new SoftSkill
-                            {
-                                EnrollmentId = enrollment.Id,
-                                Date = request.Date,
-                                Discipline = 4,
-                                Participation = 4,
-                                Collaboration = 4,
-                                LastUpdated = DateTime.Now
-                            };
-                            _context.SoftSkills.Add(newSoftSkill);
-                        }
-                    }
-                }
-                */
             }
 
             await _context.SaveChangesAsync();
@@ -114,7 +76,10 @@ namespace EduPulse.API.Services
             }
 
             int attended = studentRecords.Count(a => a.IsPresent);
+
             double percentage = ((double)attended / totalClasses) * 100;
+
+            // ✅ REAL attendance marks out of 10
             double attendanceMarks = (percentage / 100.0) * 10.0;
 
             return new AttendanceSummaryDto
@@ -122,7 +87,12 @@ namespace EduPulse.API.Services
                 TotalClasses = totalClasses,
                 AttendedClasses = attended,
                 Percentage = Math.Round(percentage, 2),
+
+                // If GradePoints is INT in DTO:
                 GradePoints = (int)Math.Round(attendanceMarks)
+
+                // 👉 If you later change DTO to double:
+                // GradePoints = Math.Round(attendanceMarks, 2)
             };
         }
 
@@ -152,16 +122,10 @@ namespace EduPulse.API.Services
         // ============================
         public async Task DeleteAttendanceByDateAsync(int courseId, DateTime date)
         {
-            var attendanceRecords = _context.Attendances
+            var records = _context.Attendances
                 .Where(a => a.CourseId == courseId && a.Date.Date == date.Date);
 
-            /* --- SOFTSKILL PART REMOVED ---
-            var softSkillRecords = _context.SoftSkills
-                .Where(s => s.Enrollment != null && s.Enrollment.CourseId == courseId && s.Date.Date == date.Date);
-            _context.SoftSkills.RemoveRange(softSkillRecords);
-            */
-
-            _context.Attendances.RemoveRange(attendanceRecords);
+            _context.Attendances.RemoveRange(records);
             await _context.SaveChangesAsync();
         }
     }

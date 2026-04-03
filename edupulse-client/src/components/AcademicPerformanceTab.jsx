@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
-    Chart as ChartJS, CategoryScale, LinearScale, PointElement,
-    LineElement, Title, Tooltip, Legend, Filler
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
@@ -10,66 +17,30 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const AcademicPerformanceTab = ({ studentId, courseId }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+
     const API_BASE_URL = "https://localhost:7096";
 
     useEffect(() => {
-        if (!studentId || !courseId) return;
-
-        const controller = new AbortController();
         const cleanStudentId = String(studentId).replace(':', '');
         const cleanCourseId = String(courseId).replace(':', '');
 
-        const fetchData = async () => {
-            setLoading(prev => (prev ? prev : true));
-            setError(null);
+        // GET TOKEN to prevent 401 errors!
+        const token = sessionStorage.getItem('ACCESS_TOKEN');
 
-            try {
-                // ✅ CORRECTED ORDER: Student ID first (2), then Course ID (5)
-                const response = await fetch(
-                    `${API_BASE_URL}/api/studentperformance/dashboard/${cleanStudentId}/${cleanCourseId}`,
-                    { signal: controller.signal }
-                );
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(text || `Server responded with ${response.status}`);
-                }
-
-                const json = await response.json();
-                if (!controller.signal.aborted) {
-                    setData(json);
-                    setLoading(false);
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error("Fetch error:", err);
-                    if (!controller.signal.aborted) {
-                        setError(err.message);
-                        setLoading(false);
-                    }
-                }
-            }
-        };
-
-        fetchData();
-
-        return () => controller.abort();
-
+        fetch(`${API_BASE_URL}/api/studentperformance/dashboard/${cleanStudentId}/${cleanCourseId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(res => res.json())
+            .then(json => {
+                setData(json);
+                setLoading(false);
+            })
+            .catch(err => console.error("Fetch error:", err));
     }, [studentId, courseId]);
 
-    if (loading) return <div className="p-10 text-center text-gray-400">Loading Performance Data...</div>;
+    if (loading || !data) return <div className="p-10 text-center text-gray-400">Loading Performance Data...</div>;
 
-    if (error) return (
-        <div className="p-10 text-center text-red-400">
-            <p>Unable to load chart data.</p>
-            <small>{error}</small>
-        </div>
-    );
-
-    if (!data) return <div className="p-10 text-center text-gray-400">No data available.</div>;
-
-    const timeline = data.timeline || [];
+    const timeline = data.timeline;
 
     const chartData = {
         labels: timeline.map(p => p.eventName),
@@ -77,9 +48,9 @@ const AcademicPerformanceTab = ({ studentId, courseId }) => {
             {
                 label: 'Grades (%)',
                 data: timeline.map(p => p.gradePercentage),
-                borderColor: '#3b82f6',
+                borderColor: '#3b82f6', // Blue
                 backgroundColor: 'rgba(59,130,246,0.1)',
-                borderWidth: 4,
+                borderWidth: 3,
                 tension: 0,
                 spanGaps: true,
                 pointRadius: ctx => timeline[ctx.dataIndex].gradePercentage != null ? 6 : 0,
@@ -88,33 +59,36 @@ const AcademicPerformanceTab = ({ studentId, courseId }) => {
             },
             {
                 label: 'Discipline',
-                data: timeline.map(p => p.disciplineRating ?? p.DisciplineRating),
-                borderColor: '#ef4444',
+                data: timeline.map(p => p.disciplineRating),
+                borderColor: '#ef4444', // Red
                 borderDash: [5, 5],
-                tension: 0.3,
-                pointRadius: 0,
-                spanGaps: true,
-                yAxisID: 'y1'
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 0, // Removed dots to match Image 2
+                yAxisID: 'y1',
+                spanGaps: true
             },
             {
                 label: 'Participation',
-                data: timeline.map(p => p.participationRating ?? p.ParticipationRating),
-                borderColor: '#f59e0b',
-                borderDash: [2, 2],
-                tension: 0.3,
+                data: timeline.map(p => p.participationRating),
+                borderColor: '#f59e0b', // Yellow/Orange
+                borderDash: [5, 5],
+                borderWidth: 2,
+                tension: 0.4,
                 pointRadius: 0,
-                spanGaps: true,
-                yAxisID: 'y1'
+                yAxisID: 'y1',
+                spanGaps: true
             },
             {
                 label: 'Collaboration',
-                data: timeline.map(p => p.collaborationRating ?? p.CollaborationRating),
-                borderColor: '#10b981',
-                borderDash: [10, 5],
-                tension: 0.3,
+                data: timeline.map(p => p.collaborationRating),
+                borderColor: '#10b981', // Green
+                borderDash: [5, 5],
+                borderWidth: 2,
+                tension: 0.4,
                 pointRadius: 0,
-                spanGaps: true,
-                yAxisID: 'y1'
+                yAxisID: 'y1',
+                spanGaps: true
             }
         ]
     };
@@ -124,56 +98,73 @@ const AcademicPerformanceTab = ({ studentId, courseId }) => {
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-            legend: { position: 'top', labels: { boxWidth: 15, padding: 15, font: { size: 11 } } },
+            legend: {
+                position: 'top',
+                labels: { boxWidth: 20, padding: 15, usePointStyle: true }
+            },
             tooltip: {
                 callbacks: {
                     title: (context) => {
-                        const item = timeline[context[0].dataIndex];
-                        const dateStr = new Date(item.date).toLocaleDateString();
-                        return item.eventName.includes("Review")
-                            ? `${item.eventName} (Week Ending Thu, ${dateStr})`
-                            : `${item.eventName} (${dateStr})`;
+                        const date = new Date(timeline[context[0].dataIndex].date).toLocaleDateString();
+                        return `${timeline[context[0].dataIndex].eventName} (${date})`;
                     }
                 }
             }
         },
         scales: {
-            y: {
-                min: 0, max: 100,
-                title: { display: true, text: 'Exam Score %', color: '#3b82f6' }
-            },
-            y1: {
-                min: 1, max: 5,
-                position: 'right',
-                grid: { drawOnChartArea: false },
-                title: { display: true, text: 'Pulse Rating (1-5)', color: '#666' }
-            }
+            y: { min: 0, max: 100, title: { display: true, text: 'Exam Score %', color: '#3b82f6' } },
+            y1: { min: 1, max: 5, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Pulse Rating (1-5)', color: '#6b7280' } }
         }
     };
 
     return (
-        <div className="user-info-card" style={{ border: '1px solid #e5e7eb', padding: '24px', backgroundColor: '#fff', borderRadius: '12px' }}>
-            <div className="health-bar-wrapper" style={{ marginBottom: '60px' }}>
-                <div className="flex justify-between items-end mb-6">
-                    <h3 className="text-xl font-bold text-gray-800">
+        <div className="user-info-card" style={{ border: '1px solid #e5e7eb', padding: '24px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+
+            {/* --- FIXED HEALTH BAR SECTION --- */}
+            <div className="health-bar-wrapper" style={{ marginBottom: '40px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '15px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>
                         Academic Health: <span style={{ color: data.currentPercentage >= 40 ? '#10b981' : '#ef4444' }}>{data.academicHealthStatus}</span>
                     </h3>
-                    <p className="text-3xl font-black text-gray-900">{data.currentPercentage}%</p>
                 </div>
-                <div style={{ position: 'relative', height: '16px', background: '#f3f4f6', borderRadius: '8px' }}>
+
+                <p style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#374151' }}>{data.currentPercentage}%</p>
+
+                {/* Health Bar */}
+                <div style={{ position: 'relative', height: '16px', background: '#f3f4f6', borderRadius: '8px', marginTop: '20px' }}>
+                    {/* Fill */}
                     <div style={{ width: `${data.currentPercentage}%`, height: '100%', borderRadius: '8px', background: data.currentPercentage >= 40 ? '#10b981' : '#ef4444', transition: 'width 1s ease' }} />
-                    <div style={{ position: 'absolute', left: '40%', top: '-8px', height: '32px', width: '2px', background: '#374151', zIndex: 10 }}>
-                        <span style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '11px', fontWeight: '900', color: '#374151', whiteSpace: 'nowrap', background: '#fff', padding: '0 4px', border: '1px solid #374151', borderRadius: '3px' }}>PASS (40%)</span>
+
+                    {/* Clean PASS MARKER (Matches Image 2 exactly) */}
+                    <div style={{ position: 'absolute', left: '40%', top: '-25px', height: '35px', width: '2px', background: '#6b7280', zIndex: 10 }}>
+                        <span style={{
+                            position: 'absolute',
+                            top: '-12px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            color: '#374151',
+                            background: '#fff',
+                            padding: '2px 6px',
+                            border: '1px solid #9ca3af',
+                            borderRadius: '4px',
+                            whiteSpace: 'nowrap'
+                        }}>
+                            PASS (40%)
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div style={{ height: '400px', marginTop: '20px' }}>
+            {/* Chart Area */}
+            <div style={{ height: '380px', marginTop: '30px' }}>
                 <Line data={chartData} options={chartOptions} />
             </div>
 
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                <p className="text-sm text-blue-800 italic m-0">
+            {/* Updated Footer Text */}
+            <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px', borderLeft: '4px solid #6b7280' }}>
+                <p style={{ fontSize: '0.9rem', color: '#4b5563', margin: 0 }}>
                     <strong>Daily Pulse:</strong> Dashed lines track behavioral traits averaged weekly (Sun–Thu). Solid blue line tracks academic results.
                 </p>
             </div>

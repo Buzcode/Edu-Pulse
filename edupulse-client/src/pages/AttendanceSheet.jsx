@@ -14,7 +14,13 @@ const AttendanceSheet = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const token = localStorage.getItem('token');
+            // ✅ FIXED: Look in sessionStorage for ACCESS_TOKEN
+            const token = sessionStorage.getItem('ACCESS_TOKEN');
+            if (!token) {
+                setLoading(false);
+                return;
+            }
+
             try {
                 // 1. Get the list of enrolled students (for the rows)
                 const studentsRes = await axios.get(`${API_BASE}/Courses/${courseId}/students`, {
@@ -45,7 +51,8 @@ const AttendanceSheet = () => {
             return;
         }
 
-        const token = localStorage.getItem('token');
+        // ✅ FIXED: Look in sessionStorage
+        const token = sessionStorage.getItem('ACCESS_TOKEN');
         try {
             await axios.delete(`${API_BASE}/Attendance/course/${courseId}/date/${date}`, {
                 headers: { Authorization: `Bearer ${token}` }

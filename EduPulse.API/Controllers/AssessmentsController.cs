@@ -7,14 +7,6 @@ using System.Security.Claims;
 
 namespace EduPulse.API.Controllers
 {
-    // This small class tells the server exactly what the JSON data looks like.
-    // This fixes the 'JsonElement' dynamic crash while staying compatible with the frontend.
-    public class GradingPolicyUpdateDto
-    {
-        // Adding = string.Empty; tells C# that this will never be null by default.
-        public string Policy { get; set; } = string.Empty;
-    }
-
     [Authorize(Roles = "Teacher,Admin")]
     [ApiController]
     [Route("api/[controller]")]
@@ -79,13 +71,12 @@ namespace EduPulse.API.Controllers
         }
 
         [HttpPost("course/{courseId}/policy")]
-        public async Task<IActionResult> UpdatePolicy(int courseId, [FromBody] GradingPolicyUpdateDto body)
+        public async Task<IActionResult> UpdatePolicy(int courseId, [FromBody] dynamic body)
         {
             var course = await _context.Courses.FindAsync(courseId);
             if (course == null) return NotFound();
 
-            // Now using 'body.Policy' is safe and won't throw the 'JsonElement' exception.
-            course.GradingPolicy = body.Policy;
+            course.GradingPolicy = body.policy;
             await _context.SaveChangesAsync();
             return Ok();
         }

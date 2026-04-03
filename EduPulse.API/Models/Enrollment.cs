@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace EduPulse.API.Models
+﻿namespace EduPulse.API.Models
 {
     public class Enrollment
     {
@@ -13,7 +11,9 @@ namespace EduPulse.API.Models
         public int StudentId { get; set; }
         public User? Student { get; set; }
 
-        public string Status { get; set; } = "Regular"; // Regular, Retake, Carry
+        // NEW: 0 = Ongoing, 1 = Completed
+        public bool IsCompleted { get; set; } = false;
+        public string Status{ get; set; } = "Regular"; // Regular, Retake, Carry
         public DateTime EnrolledAt { get; set; } = DateTime.Now;
     }
 }

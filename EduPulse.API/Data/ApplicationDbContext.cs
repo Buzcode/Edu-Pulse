@@ -17,9 +17,9 @@ namespace EduPulse.API.Data
         public DbSet<CourseMaterial> CourseMaterials { get; set; }
         public DbSet<Assessment> Assessments { get; set; }
         public DbSet<Grade> Grades { get; set; }
+        public DbSet<SoftSkill> SoftSkills { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
-        
-
+        public DbSet<CourseResult> CourseResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +45,31 @@ namespace EduPulse.API.Data
                 .HasForeignKey(e => e.StudentId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-           
+            // ================= Grade Relations =================
+            modelBuilder.Entity<Grade>()
+                .HasOne(g => g.Student)
+                .WithMany(u => u.Grades)
+                .HasForeignKey(g => g.StudentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // ================= Attendance Rules =================
+            modelBuilder.Entity<Attendance>()
+                .HasIndex(a => new { a.CourseId, a.StudentId, a.Date })
+                .IsUnique();
+
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Student)
+                .WithMany()
+                .HasForeignKey(a => a.StudentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Course)
+                .WithMany()
+                .HasForeignKey(a => a.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ================= ⭐ CRITICAL FIX: Seed Departments =================
             // This works perfectly with the new DbSeeder logic
             modelBuilder.Entity<Department>().HasData(
                 new Department { Id = 1, Name = "CSE", TeacherVerificationKey = "CSE-KEY" },
