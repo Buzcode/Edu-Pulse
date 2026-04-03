@@ -36,5 +36,6 @@ namespace EduPulse.API.Models
         // --- NAVIGATION PROPERTIES ---
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public ICollection<Assessment> Assessments { get; set; } = new List<Assessment>();
+        public bool IsArchived { get; set; } = false;
     }
 }

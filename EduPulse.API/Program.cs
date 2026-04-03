@@ -1,9 +1,9 @@
 using EduPulse.API.Data;
-using EduPulse.API.Services; // ✅ Re-enabled: Make sure this folder exists
+using EduPulse.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders; // ✅ Required for FileProvider
 using System.Text;
 using System.Text.Json;
 
@@ -13,17 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-
-    // Ignore warnings for pending model changes during development
-    options.ConfigureWarnings(w =>
-        w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)
-    );
 });
-
-// -------------------- SERVICES (DEPENDENCY INJECTION) --------------------
-// ✅ ADDED: This fixes the "Unable to resolve service" crash
+// -------------------- SERVICES --------------------
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
-
+builder.Services.AddScoped<PromotionService>();
 // -------------------- CONTROLLERS --------------------
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -32,7 +25,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
-// -------------------- CORS (Allow React) --------------------
+// -------------------- CORS --------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -60,13 +53,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// -------------------- DATABASE AUTO-MIGRATION & SEEDING --------------------
+// -------------------- ⚠️ CRITICAL FIX: STATIC FILES --------------------
+// This section makes the "Uploads" folder accessible via URL
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");
+
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/Uploads"
+});
+// ----------------------------------------------------------------------
+
+// -------------------- AUTO-MIGRATION --------------------
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -74,20 +82,16 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         var configuration = services.GetRequiredService<IConfiguration>();
-
-        // Applies migrations automatically
         context.Database.Migrate();
-
-        // ✅ RE-ENABLED: This seeds the database with initial data
         DbSeeder.Seed(context, configuration);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"DB Error during Migration/Seed: {ex.Message}");
+        Console.WriteLine($"DB Error: {ex.Message}");
     }
 }
 
-// -------------------- MIDDLEWARE PIPELINE --------------------
+// -------------------- MIDDLEWARE --------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -101,18 +105,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// -------------------- STATIC FILES (Uploads) --------------------
-var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");
-if (!Directory.Exists(uploadsPath))
-{
-    Directory.CreateDirectory(uploadsPath);
-}
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(uploadsPath),
-    RequestPath = "/Uploads"
-});
 
 app.Run();

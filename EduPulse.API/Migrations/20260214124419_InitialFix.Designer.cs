@@ -4,6 +4,7 @@ using EduPulse.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduPulse.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260214124419_InitialFix")]
+    partial class InitialFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,9 +105,6 @@ namespace EduPulse.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
 
@@ -168,46 +168,6 @@ namespace EduPulse.API.Migrations
                     b.ToTable("CourseMaterials");
                 });
 
-            modelBuilder.Entity("EduPulse.API.Models.CourseResult", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AttemptType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("ContinuousAssessmentMarks")
-                        .HasColumnType("float");
-
-                    b.Property<int>("EnrollmentId")
-                        .HasColumnType("int");
-
-                    b.Property<double>("FinalExamMarks")
-                        .HasColumnType("float");
-
-                    b.Property<bool>("IsActiveCarryCourse")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPassed")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ResultPublishedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("TotalMarks")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EnrollmentId");
-
-                    b.ToTable("CourseResults");
-                });
-
             modelBuilder.Entity("EduPulse.API.Models.Department", b =>
                 {
                     b.Property<int>("Id")
@@ -268,9 +228,6 @@ namespace EduPulse.API.Migrations
 
                     b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -442,17 +399,6 @@ namespace EduPulse.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
-                });
-
-            modelBuilder.Entity("EduPulse.API.Models.CourseResult", b =>
-                {
-                    b.HasOne("EduPulse.API.Models.Enrollment", "Enrollment")
-                        .WithMany()
-                        .HasForeignKey("EnrollmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Enrollment");
                 });
 
             modelBuilder.Entity("EduPulse.API.Models.Enrollment", b =>

@@ -8,11 +8,17 @@ const AttendanceProgress = ({ courseId }) => {
 
     useEffect(() => {
         const fetchAttendance = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) return;
+            // FIXED: Changed localStorage to sessionStorage
+            const token = sessionStorage.getItem('ACCESS_TOKEN');
+
+            if (!token) {
+                setLoading(false);
+                return;
+            }
 
             try {
                 const decoded = jwtDecode(token);
+                // Standard JWT claim for NameIdentifier
                 const studentId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
 
                 const res = await axios.get(`https://localhost:7096/api/Attendance/summary/${courseId}/${studentId}`, {
@@ -20,7 +26,7 @@ const AttendanceProgress = ({ courseId }) => {
                 });
                 setSummary(res.data);
             } catch (err) {
-                console.error("Error fetching attendance:", err);
+                console.error("Error fetching attendance progress:", err);
             } finally {
                 setLoading(false);
             }
@@ -30,9 +36,10 @@ const AttendanceProgress = ({ courseId }) => {
     }, [courseId]);
 
     if (loading) return <div className="attendance-loading">Loading attendance records...</div>;
+
+    // If no records found, return nothing instead of an error
     if (!summary || summary.totalClasses === 0) return null;
 
-    // Logic to determine CSS class based on percentage
     const getStatusClass = (pct) => {
         if (pct >= 80) return 'status-good';
         if (pct >= 60) return 'status-warning';
@@ -55,7 +62,7 @@ const AttendanceProgress = ({ courseId }) => {
                 ></div>
             </div>
 
-            <div className="attendance-score-row">
+            <div className="score-row">
                 <div className="score-detail">
                     <span className="percentage-text">{summary.percentage}% Presence</span>
                     <small className="scale-hint">Scale: {summary.percentage}% → {summary.gradePoints}/10</small>

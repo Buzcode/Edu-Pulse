@@ -1,5 +1,5 @@
 ﻿using EduPulse.API.Data;
-using EduPulse.API.Models; // Ensure you have this namespace
+using EduPulse.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +13,7 @@ namespace EduPulse.API.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _environment; // ✅ ADDED: Required for File Uploads
+        private readonly IWebHostEnvironment _environment;
 
         public CoursesController(ApplicationDbContext context, IWebHostEnvironment environment)
         {
@@ -22,7 +22,7 @@ namespace EduPulse.API.Controllers
         }
 
         // =================================================================
-        // 1. GET: Fetch courses based on role (User's Logic)
+        // 1. GET: Fetch courses based on role
         // =================================================================
         [HttpGet]
         public async Task<IActionResult> GetMyCourses()
@@ -38,10 +38,9 @@ namespace EduPulse.API.Controllers
             // --- TEACHER LOGIC ---
             if (role == "Teacher")
             {
-                // Ensure your Course model has TeacherId and TargetDept navigation
                 var teacherCourses = await _context.Courses
-                    .Where(c => c.TeacherId == userId)
-                    .Include(c => c.TargetDept) // Ensure this relationship exists in DbContext
+                    .Where(c => c.TeacherId == userId && c.IsArchived == false)
+                    .Include(c => c.TargetDept)
                     .Select(c => new
                     {
                         c.Id,
@@ -49,7 +48,6 @@ namespace EduPulse.API.Controllers
                         c.Code,
                         c.IsPublished,
                         DeptName = c.TargetDept != null ? c.TargetDept.Name : "N/A",
-                        // Logic: Year 2 Sem 1 -> TargetSemester 3. (3+1)/2 = 2. 
                         Year = (c.TargetSemester + 1) / 2,
                         Semester = c.TargetSemester % 2 == 0 ? 2 : 1
                     })
@@ -58,11 +56,12 @@ namespace EduPulse.API.Controllers
                 return Ok(teacherCourses);
             }
 
-            // --- STUDENT LOGIC ---
+            // --- STUDENT LOGIC (UPDATED WITH HIDE LOGIC) ---
             if (role == "Student")
             {
                 var studentCourses = await _context.Enrollments
-                    .Where(e => e.StudentId == userId)
+                    // ✅ MODIFIED: Only fetch courses that are NOT completed
+                    .Where(e => e.StudentId == userId && e.IsCompleted == false)
                     .Include(e => e.Course!).ThenInclude(c => c.TargetDept)
                     .Include(e => e.Course!.Teacher)
                     .Select(e => new
@@ -85,7 +84,6 @@ namespace EduPulse.API.Controllers
             // --- ADMIN LOGIC ---
             if (role == "Admin")
             {
-                // Ensure Admin can see all courses
                 return Ok(await _context.Courses
                     .Include(c => c.TargetDept)
                     .Include(c => c.Teacher)
@@ -103,7 +101,7 @@ namespace EduPulse.API.Controllers
         }
 
         // =================================================================
-        // 2. POST: Create New Course (User's Logic)
+        // 2. POST: Create New Course
         // =================================================================
         [HttpPost]
         public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto input)
@@ -112,7 +110,6 @@ namespace EduPulse.API.Controllers
             if (userIdClaim == null) return Unauthorized();
             int teacherId = int.Parse(userIdClaim.Value);
 
-            // Calculation: Year 2, Sem 1 => (2-1)*2 + 1 = 3
             int calculatedSemester = (input.Year - 1) * 2 + input.Semester;
 
             var course = new Course
@@ -132,8 +129,35 @@ namespace EduPulse.API.Controllers
             return Ok(new { message = "Course created successfully", courseId = course.Id });
         }
 
+        // archived courses
+
+        [HttpGet("archived")]
+        public async Task<IActionResult> GetArchivedCourses()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized();
+
+            // Fetch only archived courses for this teacher
+            var archivedCourses = await _context.Courses
+                .Where(c => c.TeacherId == userId && c.IsArchived == true)
+                .Include(c => c.TargetDept)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Title,
+                    c.Code,
+                    DeptName = c.TargetDept != null ? c.TargetDept.Name : "N/A",
+                    Year = (c.TargetSemester + 1) / 2,
+                    Semester = c.TargetSemester % 2 == 0 ? 2 : 1
+                })
+                .ToListAsync();
+
+            return Ok(archivedCourses);
+        }
+
         // =================================================================
-        // 3. POST: Sync Batch (User's Logic)
+        // 3. POST: Sync Batch
         // =================================================================
         [HttpPost("sync/{courseId}")]
         public async Task<IActionResult> SyncBatch(int courseId)
@@ -141,11 +165,10 @@ namespace EduPulse.API.Controllers
             var course = await _context.Courses.FindAsync(courseId);
             if (course == null) return NotFound("Course not found.");
 
-            // Find students in the same Dept and Semester
             var targetStudents = await _context.Users
                 .Where(u => u.Role == UserRole.Student &&
                             u.DepartmentId == course.TargetDeptId &&
-                            u.CurrentSemester == course.TargetSemester) // Ensure User model has CurrentSemester
+                            u.CurrentSemester == course.TargetSemester)
                 .ToListAsync();
 
             int enrolledCount = 0;
@@ -162,7 +185,7 @@ namespace EduPulse.API.Controllers
                         CourseId = courseId,
                         StudentId = student.Id,
                         Status = "Regular",
-                        EnrolledAt = DateTime.Now // Ensure Enrollment model has this field
+                        EnrolledAt = DateTime.Now
                     });
                     enrolledCount++;
                 }
@@ -173,7 +196,7 @@ namespace EduPulse.API.Controllers
         }
 
         // =================================================================
-        // 4. GET: Enrolled students (User's Logic)
+        // 4. GET: Enrolled students
         // =================================================================
         [HttpGet("{id}/students")]
         public async Task<IActionResult> GetStudentsInCourse(int id)
@@ -194,8 +217,7 @@ namespace EduPulse.API.Controllers
         }
 
         // =================================================================
-        // ✅ 5. GET: Fetch Course Materials (RESTORED)
-        // This fixes the 404 on the Course Stream page
+        // 5. GET: Fetch Course Materials 
         // =================================================================
         [HttpGet("{id}/materials")]
         public async Task<ActionResult<IEnumerable<CourseMaterial>>> GetMaterials(int id)
@@ -209,8 +231,7 @@ namespace EduPulse.API.Controllers
         }
 
         // =================================================================
-        // ✅ 6. POST: Upload Material (RESTORED)
-        // This fixes the Upload Button functionality
+        // 6. POST: Upload Material 
         // =================================================================
         [HttpPost("{id}/upload")]
         public async Task<IActionResult> UploadMaterial(int id, [FromForm] MaterialUploadDto uploadDto)
@@ -255,7 +276,7 @@ namespace EduPulse.API.Controllers
         }
 
         // =================================================================
-        // 7. POST: Toggle Publish status (User's Logic)
+        // 7. POST: Toggle Publish status
         // =================================================================
         [HttpPost("{id}/publish")]
         public async Task<IActionResult> TogglePublish(int id)
@@ -269,7 +290,7 @@ namespace EduPulse.API.Controllers
         }
 
         // =================================================================
-        // 8. POST: Manually enroll a student (User's Logic)
+        // 8. POST: Manually enroll a student 
         // =================================================================
         [HttpPost("{courseId}/enroll-manual")]
         public async Task<IActionResult> EnrollManual(int courseId, [FromBody] string studentEmail)
@@ -286,7 +307,7 @@ namespace EduPulse.API.Controllers
             {
                 CourseId = courseId,
                 StudentId = student.Id,
-                Status = "Retake" // Ensure Status is a string or Enum in your model
+                Status = "Retake"
             });
 
             await _context.SaveChangesAsync();
@@ -294,9 +315,6 @@ namespace EduPulse.API.Controllers
         }
     }
 
-    // =================================================================
-    // DTOs
-    // =================================================================
     public class CreateCourseDto
     {
         public string Title { get; set; } = string.Empty;

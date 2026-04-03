@@ -7,15 +7,15 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     if (loading) return <div>Loading...</div>;
 
-    // 1. Not logged in at all
+    // If user is null, they are not logged in for this specific session/tab
     if (!user) {
-        return <Navigate to="/login" />;
+        return <Navigate to="/login" replace />;
     }
 
-    // 2. Logged in, but role doesn't match (e.g., Student trying to see Teacher pages)
+    // Role-based authorization
     if (requiredRole && user.role !== requiredRole) {
         alert("Access Denied: You do not have permission to view this page.");
-        return <Navigate to="/dashboard" />;
+        return <Navigate to="/dashboard" replace />;
     }
 
     return children;

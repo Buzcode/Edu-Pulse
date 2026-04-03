@@ -26,7 +26,12 @@ const AttendanceMarking = () => {
     // 1. Fetch Students
     useEffect(() => {
         const fetchStudents = async () => {
-            const token = localStorage.getItem('token');
+            // FIXED: Changed localStorage -> sessionStorage and key -> ACCESS_TOKEN
+            const token = sessionStorage.getItem('ACCESS_TOKEN');
+            if (!token) {
+                setLoading(false);
+                return;
+            }
             try {
                 const res = await axios.get(`${API_BASE}/Courses/${courseId}/students`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -48,7 +53,10 @@ const AttendanceMarking = () => {
     useEffect(() => {
         const fetchExistingRecords = async () => {
             if (students.length === 0) return;
-            const token = localStorage.getItem('token');
+            // FIXED: Changed localStorage -> sessionStorage and key -> ACCESS_TOKEN
+            const token = sessionStorage.getItem('ACCESS_TOKEN');
+            if (!token) return;
+
             try {
                 const res = await axios.get(`${API_BASE}/Attendance/course/${courseId}/date/${date}`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -79,7 +87,8 @@ const AttendanceMarking = () => {
     // --- SUBMIT ATTENDANCE ---
     const handleSubmit = async () => {
         setSaving(true);
-        const token = localStorage.getItem('token');
+        // FIXED: Changed localStorage -> sessionStorage and key -> ACCESS_TOKEN
+        const token = sessionStorage.getItem('ACCESS_TOKEN');
         const payload = {
             courseId: parseInt(courseId),
             date: date,
@@ -106,7 +115,8 @@ const AttendanceMarking = () => {
     // --- OPEN RATING MODAL (Smart Fetch) ---
     const handleOpenRateModal = async (student) => {
         setSelectedStudent(student);
-        const token = localStorage.getItem('token');
+        // FIXED: Changed localStorage -> sessionStorage and key -> ACCESS_TOKEN
+        const token = sessionStorage.getItem('ACCESS_TOKEN');
 
         // Default values
         setSoftSkills({ discipline: 4, participation: 4, collaboration: 4 });
@@ -118,7 +128,7 @@ const AttendanceMarking = () => {
             });
 
             // Find record matching the selected date picker value
-            const existingForDate = res.data.find(r => r.date === date); // API returns YYYY-MM-DD string
+            const existingForDate = res.data.find(r => r.date === date);
 
             if (existingForDate) {
                 setSoftSkills({
@@ -127,7 +137,6 @@ const AttendanceMarking = () => {
                     collaboration: existingForDate.collaboration
                 });
             }
-            // NEW VERSION (Standard fix for unused variables)
         } catch {
             console.log("No existing history found, using defaults.");
         }
@@ -137,12 +146,13 @@ const AttendanceMarking = () => {
 
     // --- SAVE INDIVIDUAL RATING (Override) ---
     const handleSaveSoftSkills = async () => {
-        const token = localStorage.getItem('token');
+        // FIXED: Changed localStorage -> sessionStorage and key -> ACCESS_TOKEN
+        const token = sessionStorage.getItem('ACCESS_TOKEN');
         try {
             await axios.post(`${API_BASE}/SoftSkills/upsert`, {
                 studentId: selectedStudent.studentId,
                 courseId: parseInt(courseId),
-                date: date, // ✅ IMPORTANT: Send the specific date selected
+                date: date,
                 discipline: softSkills.discipline,
                 participation: softSkills.participation,
                 collaboration: softSkills.collaboration
@@ -208,7 +218,6 @@ const AttendanceMarking = () => {
                                     </label>
                                 </td>
                                 <td>
-                                    {/* ✅ NEW: Rate Button directly in Attendance Sheet */}
                                     <button
                                         onClick={() => handleOpenRateModal(student)}
                                         className="btn-action"
@@ -238,7 +247,7 @@ const AttendanceMarking = () => {
                 </div>
             </div>
 
-            {/* ✅ MODAL: Daily Evaluation */}
+            {/* MODAL: Daily Evaluation */}
             {showRateModal && selectedStudent && (
                 <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1001 }}>
                     <div className="user-info-card" style={{ width: '400px' }}>

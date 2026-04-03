@@ -1,0 +1,1 @@
+﻿UPDATE Courses SET TeacherId = 5 WHERE Id = 1;
